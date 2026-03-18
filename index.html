@@ -144,10 +144,10 @@
     // 各入力項目の設定 (x座標, y座標, 最大幅, デフォルトフォントサイズ)
     // ※ テンプレート画像の実際の解像度に合わせて x, y の微調整が必要です
     const textConfig = {
-        name: { x: 650, y: 215, maxWidth: 350, fontSize: 45 },
-        school: { x: 550, y: 240, maxWidth: 350, fontSize: 45 },
-        highschool: { x: 550, y: 325, maxWidth: 350, fontSize: 45 },
-        birthplace: { x: 550, y: 410, maxWidth: 350, fontSize: 45 },
+        name: { x: 520, y: 215, maxWidth: 480, fontSize: 45 },
+        school: { x: 520, y: 320, maxWidth: 480, fontSize: 45 },
+        highschool: { x: 520, y: 325, maxWidth: 480, fontSize: 45 },
+        birthplace: { x: 520, y: 410, maxWidth: 480, fontSize: 45 },
         song: { x: 380, y: 555, maxWidth: 520, fontSize: 24 },
         lesson: { x: 430, y: 645, maxWidth: 470, fontSize: 24 },
         boom: { x: 380, y: 735, maxWidth: 520, fontSize: 24 },
@@ -197,9 +197,13 @@
                 currentSize -= 1;
                 ctx.font = `${currentSize}px "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif`;
             }
+            // --- 中央揃えのための修正箇所 ---
+            ctx.textAlign = 'center'; // テキストを中央揃えに設定
             
+            // 中心点 = 開始位置(x) + (最大幅(maxWidth) / 2)
+            const centerX = config.x + (config.maxWidth / 2);
 
-            ctx.fillText(text, config.x, config.y);
+            ctx.fillText(text, centerX, config.y);
         }
     }
 
