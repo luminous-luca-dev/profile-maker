@@ -79,47 +79,47 @@
     </div>
     <div class="form-group">
         <label for="name">名前</label>
-        <input type="text" id="name" placeholder="山田 太郎">
+        <input type="text" id="name" placeholder="山田 太郎" value="山田 太郎">
     </div>
     <div class="form-group">
         <label for="school">学校・学部・学年</label>
-        <input type="text" id="school" placeholder="〇〇大学 〇〇学部 1年">
+        <input type="text" id="school" placeholder="〇〇大学 〇〇学部 1年" value="〇〇大学 〇〇学部 1年">
     </div>
     <div class="form-group">
         <label for="highschool">出身校</label>
-        <input type="text" id="highschool" placeholder="〇〇高校">
+        <input type="text" id="highschool" placeholder="〇〇高校" value="〇〇高校">
     </div>
     <div class="form-group">
         <label for="birthplace">出身地</label>
-        <input type="text" id="birthplace" placeholder="千葉県">
+        <input type="text" id="birthplace" placeholder="千葉県" value="千葉県">
     </div>
     <div class="form-group">
         <label for="song">好きな曲</label>
-        <input type="text" id="song">
+        <input type="text" id="song" value="ずとまよaaaaaaaaaaaaaaaaaaaaaaaaaaaa">
     </div>
     <div class="form-group">
         <label for="lesson">昔やっていた習い事</label>
-        <input type="text" id="lesson">
+        <input type="text" id="lesson" value="ぴあのああああああああああああああああああ">
     </div>
     <div class="form-group">
         <label for="boom">最近のマイブーム</label>
-        <input type="text" id="boom">
+        <input type="text" id="boom" value="おどりくるうぜええええええええええ">
     </div>
     <div class="form-group">
         <label for="effort">人生で1番頑張ったこと</label>
-        <input type="text" id="effort">
+        <input type="text" id="effort" value="じゅけんふううううううううううううううううう">
     </div>
     <div class="form-group">
         <label for="message1">後輩へ一言・先輩に質問 (1行目)</label>
-        <input type="text" id="message1">
+        <input type="text" id="message1" value="ああああああああああああああああ">
     </div>
     <div class="form-group">
         <label for="message2">後輩へ一言・先輩に質問 (2行目)</label>
-        <input type="text" id="message2">
+        <input type="text" id="message2" value="ああああああああああああああああ">
     </div>
     <div class="form-group">
-        <label for="message3">後輩へ一言・先輩に質問 (3行目)</label>
-        <input type="text" id="message3">
+        <label for="message3">後輩へ一言・先輩に質問 (3行目)(必要なら)</label>
+        <input type="text" id="message3" value="ああああああああああああああ">
     </div>
     
     <button id="downloadBtn">画像をダウンロード</button>
@@ -144,21 +144,21 @@
     // 各入力項目の設定 (x座標, y座標, 最大幅, デフォルトフォントサイズ)
     // ※ テンプレート画像の実際の解像度に合わせて x, y の微調整が必要です
     const textConfig = {
-        name: { x: 520, y: 215, maxWidth: 480, fontSize: 45 },
-        school: { x: 520, y: 320, maxWidth: 480, fontSize: 45 },
-        highschool: { x: 520, y: 325, maxWidth: 480, fontSize: 45 },
-        birthplace: { x: 520, y: 410, maxWidth: 480, fontSize: 45 },
-        song: { x: 380, y: 555, maxWidth: 520, fontSize: 24 },
-        lesson: { x: 430, y: 645, maxWidth: 470, fontSize: 24 },
-        boom: { x: 380, y: 735, maxWidth: 520, fontSize: 24 },
-        effort: { x: 80, y: 830, maxWidth: 820, fontSize: 24 },
-        message1: { x: 80, y: 1010, maxWidth: 820, fontSize: 24 },
-        message2: { x: 80, y: 1100, maxWidth: 820, fontSize: 24 },
-        message3: { x: 80, y: 1190, maxWidth: 820, fontSize: 24 },
+        name: { x: 520, y: 215, maxWidth: 480, fontSize: 45, align: 'center' },
+        school: { x: 520, y: 330, maxWidth: 480, fontSize: 45, align: 'center' },
+        highschool: { x: 520, y: 445, maxWidth: 480, fontSize: 45, align: 'center' },
+        birthplace: { x: 520, y: 550, maxWidth: 480, fontSize: 45, align: 'center' },
+        song: { x: 280, y: 745, maxWidth: 730, fontSize: 45, align: 'center' },
+        lesson: { x: 460, y: 830, maxWidth: 550, fontSize: 45, align: 'center' },
+        boom: { x: 400, y: 930, maxWidth: 615, fontSize: 45 , align: 'center'},
+        effort: { x: 20, y: 1075, maxWidth: 1000, fontSize: 45, align: 'center' },
+        message1: { x: 70, y: 1285, maxWidth: 900, fontSize: 45, align: 'center' },
+        message2: { x: 70, y: 1390, maxWidth: 900, fontSize: 45, align: 'center' },
+        message3: { x: 70, y: 1490, maxWidth: 900, fontSize: 45, align: 'center' },
     };
 
     // 写真枠の設定
-    const photoConfig = { x: 50, y: 130, width: 380, height: 400 };
+    const photoConfig = { x: 50, y: 107, width: 380, height: 420 };
 
     // 描画メイン関数
     function draw() {
@@ -197,13 +197,17 @@
                 currentSize -= 1;
                 ctx.font = `${currentSize}px "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif`;
             }
-            // --- 中央揃えのための修正箇所 ---
-            ctx.textAlign = 'center'; // テキストを中央揃えに設定
-            
-            // 中心点 = 開始位置(x) + (最大幅(maxWidth) / 2)
-            const centerX = config.x + (config.maxWidth / 2);
-
-            ctx.fillText(text, centerX, config.y);
+            // --- ここから揃え方の分岐処理 ---
+            if (config.align === 'center') {
+                // 中央揃えの場合
+                ctx.textAlign = 'center';
+                const drawX = config.x + (config.maxWidth / 2);
+                ctx.fillText(text, drawX, config.y);
+            } else {
+                // 左揃えの場合（デフォルト）
+                ctx.textAlign = 'left';
+                ctx.fillText(text, config.x, config.y);
+            }
         }
     }
 
