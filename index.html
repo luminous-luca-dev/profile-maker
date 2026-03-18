@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>プロフィール画像メーカー</title>
+<style>
+    body {
+        font-family: sans-serif;
+        background-color: #f0f2f5;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    .form-container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 400px;
+        height: fit-content;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        font-size: 0.9em;
+    }
+    input[type="text"], input[type="file"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+    button {
+        width: 100%;
+        padding: 10px;
+        background-color: #7996df;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1em;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    button:hover {
+        background-color: #5c7ac2;
+    }
+    .preview-container {
+        flex-grow: 1;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
+        overflow-x: auto;
+    }
+    canvas {
+        max-width: 100%;
+        height: auto;
+        border: 1px solid #ddd;
+    }
+</style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>情報入力</h2>
+    <div class="form-group">
+        <label for="photo">プロフィール写真</label>
+        <input type="file" id="photo" accept="image/*">
+    </div>
+    <div class="form-group">
+        <label for="name">名前</label>
+        <input type="text" id="name" placeholder="山田 太郎">
+    </div>
+    <div class="form-group">
+        <label for="school">学校・学部・学年</label>
+        <input type="text" id="school" placeholder="〇〇大学 〇〇学部 1年">
+    </div>
+    <div class="form-group">
+        <label for="highschool">出身校</label>
+        <input type="text" id="highschool" placeholder="〇〇高校">
+    </div>
+    <div class="form-group">
+        <label for="birthplace">出身地</label>
+        <input type="text" id="birthplace" placeholder="千葉県">
+    </div>
+    <div class="form-group">
+        <label for="song">好きな曲</label>
+        <input type="text" id="song">
+    </div>
+    <div class="form-group">
+        <label for="lesson">昔やっていた習い事</label>
+        <input type="text" id="lesson">
+    </div>
+    <div class="form-group">
+        <label for="boom">最近のマイブーム</label>
+        <input type="text" id="boom">
+    </div>
+    <div class="form-group">
+        <label for="effort">人生で1番頑張ったこと</label>
+        <input type="text" id="effort">
+    </div>
+    <div class="form-group">
+        <label for="message1">後輩へ一言・先輩に質問 (1行目)</label>
+        <input type="text" id="message1">
+    </div>
+    <div class="form-group">
+        <label for="message2">後輩へ一言・先輩に質問 (2行目)</label>
+        <input type="text" id="message2">
+    </div>
+    <div class="form-group">
+        <label for="message3">後輩へ一言・先輩に質問 (3行目)</label>
+        <input type="text" id="message3">
+    </div>
+    
+    <button id="downloadBtn">画像をダウンロード</button>
+</div>
+
+<div class="preview-container">
+    <h2>プレビュー</h2>
+    <canvas id="canvas"></canvas>
+</div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // 背景画像の読み込み (ファイル名は適宜合わせてください)
+    const bgImage = new Image();
+    bgImage.src = 'template.jpg'; 
+    
+    // ユーザーアップロード写真用
+    let userPhoto = null;
+
+    // 各入力項目の設定 (x座標, y座標, 最大幅, デフォルトフォントサイズ)
+    // ※ テンプレート画像の実際の解像度に合わせて x, y の微調整が必要です
+    const textConfig = {
+        name: { x: 650, y: 215, maxWidth: 350, fontSize: 45 },
+        school: { x: 550, y: 240, maxWidth: 350, fontSize: 45 },
+        highschool: { x: 550, y: 325, maxWidth: 350, fontSize: 45 },
+        birthplace: { x: 550, y: 410, maxWidth: 350, fontSize: 45 },
+        song: { x: 380, y: 555, maxWidth: 520, fontSize: 24 },
+        lesson: { x: 430, y: 645, maxWidth: 470, fontSize: 24 },
+        boom: { x: 380, y: 735, maxWidth: 520, fontSize: 24 },
+        effort: { x: 80, y: 830, maxWidth: 820, fontSize: 24 },
+        message1: { x: 80, y: 1010, maxWidth: 820, fontSize: 24 },
+        message2: { x: 80, y: 1100, maxWidth: 820, fontSize: 24 },
+        message3: { x: 80, y: 1190, maxWidth: 820, fontSize: 24 },
+    };
+
+    // 写真枠の設定
+    const photoConfig = { x: 50, y: 130, width: 380, height: 400 };
+
+    // 描画メイン関数
+    function draw() {
+        if (!bgImage.complete) return;
+
+        // キャンバスサイズを背景画像に合わせる
+        canvas.width = bgImage.width;
+        canvas.height = bgImage.height;
+
+        // 1. 背景を描画
+        ctx.drawImage(bgImage, 0, 0);
+
+        // 2. ユーザー写真を背面に描画（必要であれば）
+        if (userPhoto) {
+            // 写真のアスペクト比を維持しつつ枠に収める簡易処理
+            ctx.drawImage(userPhoto, photoConfig.x, photoConfig.y, photoConfig.width, photoConfig.height);
+        }
+
+        // 3. テキストを描画
+        ctx.fillStyle = '#333'; // 文字色
+        ctx.textBaseline = 'bottom'; // 下揃えにすると罫線の上に載せやすい
+
+        for (const [id, config] of Object.entries(textConfig)) {
+            const inputElement = document.getElementById(id);
+            if (!inputElement) continue;
+            
+            const text = inputElement.value;
+            if (!text) continue;
+
+            // フォントの自動縮小処理
+            let currentSize = config.fontSize;
+            ctx.font = `${currentSize}px "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif`;
+            
+            // テキストの幅が最大幅を超える場合、フォントサイズを小さくする
+            while (ctx.measureText(text).width > config.maxWidth && currentSize > 10) {
+                currentSize -= 1;
+                ctx.font = `${currentSize}px "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif`;
+            }
+            
+
+            ctx.fillText(text, config.x, config.y);
+        }
+    }
+
+    // イベントリスナーの登録
+    bgImage.onload = draw;
+
+    // テキスト入力時にリアルタイムで再描画
+    Object.keys(textConfig).forEach(id => {
+        document.getElementById(id).addEventListener('input', draw);
+    });
+
+    // 写真のアップロード処理
+    document.getElementById('photo').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) {
+            userPhoto = null;
+            draw();
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            userPhoto = new Image();
+            userPhoto.onload = draw;
+            userPhoto.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // ダウンロード処理
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.download = 'profile_card.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    });
+</script>
+</body>
+</html>
