@@ -140,9 +140,11 @@
     <button id="downloadBtn">画像をダウンロード</button>
 </div>
 
-<div class="preview-container">
+<div class="preview-container"style="position: relative;">
     <h2>プレビュー</h2>
     <canvas id="canvas"></canvas>
+    <img id="saveImage" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; -webkit-touch-callout: default;">
+    <p style="font-size: 0.8em; color: #666;">（スマホの方は画像を長押しでも保存できます）</p>
 </div>
 
 <script>
@@ -224,6 +226,8 @@
                 ctx.fillText(text, config.x, config.y);
             }
         }
+        // draw() 関数の最後の一行に追加
+        document.getElementById('saveImage').src = canvas.toDataURL('image/png');
     }
 
     // イベントリスナーの登録
@@ -302,10 +306,30 @@
 
     // ダウンロード処理
     document.getElementById('downloadBtn').addEventListener('click', () => {
-        const link = document.createElement('a');
-        link.download = 'profile_card.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+        // 1. CanvasをBlob形式（データファイル）に変換
+        canvas.toBlob(async (blob) => {
+            const file = new File([blob], "profile_card.png", { type: "image/png" });
+
+            // 2. 共有APIが使えるかチェック
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: 'プロフィール画像',
+                        text: '作成したプロフィール画像です。'
+                    });
+                } catch (error) {
+                    console.log('共有に失敗しました', error);
+                }
+            } else {
+                // 共有APIが使えないPCなどの場合のフォールバック（従来のダウンロード）
+                const link = document.createElement('a');
+                link.download = 'profile_card.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                alert("共有機能未対応のため、ファイルとしてダウンロードしました。");
+            }
+        }, 'image/png');
     });
 </script>
 </body>
