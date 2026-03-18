@@ -68,6 +68,8 @@
         border: 1px solid #ddd;
     }
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 </head>
 <body>
 
@@ -77,6 +79,19 @@
         <label for="photo">プロフィール写真</label>
         <input type="file" id="photo" accept="image/*">
     </div>
+
+    <div id="cropperModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:white; padding:20px; border-radius:8px; max-width:90%; max-height:90%; display:flex; flex-direction:column;">
+            <div style="max-height: 70vh; overflow: hidden;">
+                <img id="cropperImage" style="max-width: 100%;">
+            </div>
+            <div style="margin-top:15px; display:flex; gap:10px;">
+                <button id="cropCancelBtn" style="background:#ccc; flex:1;">キャンセル</button>
+                <button id="cropSaveBtn" style="background:#7996df; flex:2;">この範囲で確定</button>
+            </div>
+        </div>
+    </div>
+
     <div class="form-group">
         <label for="name">名前</label>
         <input type="text" id="name" placeholder="山田 太郎" value="山田 太郎">
@@ -219,23 +234,71 @@
         document.getElementById(id).addEventListener('input', draw);
     });
 
-    // 写真のアップロード処理
+    /* =========================================
+     * ここから修正：Cropper.js統合ロジックを追加
+     * ========================================= */
+
+    let cropper = null;
+    const cropperModal = document.getElementById('cropperModal');
+    const cropperImage = document.getElementById('cropperImage');
+
+    // 写真のアップロード処理（トリミング起動版）
+    // 既存の photo input のイベントリスナーを置き換える。
     document.getElementById('photo').addEventListener('change', function(e) {
         const file = e.target.files[0];
-        if (!file) {
-            userPhoto = null;
-            draw();
-            return;
-        }
+        if (!file) return;
 
         const reader = new FileReader();
         reader.onload = function(event) {
-            userPhoto = new Image();
-            userPhoto.onload = draw;
-            userPhoto.src = event.target.result;
+            // モーダルを表示して画像を表示
+            cropperImage.src = event.target.result;
+            cropperModal.style.display = 'flex';
+
+            // 以前のCropperがあれば破棄
+            if (cropper) cropper.destroy();
+
+            // Cropperの初期化
+            cropper = new Cropper(cropperImage, {
+                // photoConfig の比率に合わせる。
+                // 現在の photoConfig は 380x420 (38:42)。縦長。
+                // 最新コードの値を尊重する。38:42。
+                aspectRatio: photoConfig.width / photoConfig.height,
+                viewMode: 1,         // 枠外にはみ出さない
+                dragMode: 'move',    // 画像を動かせる
+            });
         };
         reader.readAsDataURL(file);
     });
+
+    // キャンセルボタン
+    document.getElementById('cropCancelBtn').addEventListener('click', () => {
+        cropperModal.style.display = 'none';
+        // ファイル入力をリセット（同じファイルを再度選択できるように）
+        document.getElementById('photo').value = ''; 
+    });
+
+    // 確定ボタン
+    document.getElementById('cropSaveBtn').addEventListener('click', () => {
+        // 切り抜かれた画像をCanvasとして取得
+        // 出力解像度を設定する。photoConfigのサイズそのままでよい。
+        const croppedCanvas = cropper.getCroppedCanvas({
+            width: photoConfig.width, 
+            height: photoConfig.height
+        });
+
+        // 取得した画像を userPhoto にセット
+        userPhoto = new Image();
+        userPhoto.onload = () => {
+            draw(); // キャンバスを再描画
+            cropperModal.style.display = 'none';
+        };
+        // Canvasを画像データ(DataURL)に変換してsrcに設定
+        userPhoto.src = croppedCanvas.toDataURL();
+    });
+
+    /* =========================================
+     * ここまで修正
+     * ========================================= */
 
     // ダウンロード処理
     document.getElementById('downloadBtn').addEventListener('click', () => {
